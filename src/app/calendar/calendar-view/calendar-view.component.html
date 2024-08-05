@@ -1,0 +1,33 @@
+<mat-card>
+    <mat-card-title>Calendar</mat-card-title>
+    <mat-card-content>
+        <div class="calendar">
+            <div class="calendar-header">
+                <div class="calendar-day">Sun</div>
+                <div class="calendar-day">Mon</div>
+                <div class="calendar-day">Tue</div>
+                <div class="calendar-day">Wed</div>
+                <div class="calendar-day">Thu</div>
+                <div class="calendar-day">Fri</div>
+                <div class="calendar-day">Sat</div>
+            </div>
+            <div class="calendar-body">
+                <div *ngFor="let day of days; let i = index" class="calendar-cell" cdkDropList [cdkDropListData]="day.appointments"
+                    (cdkDropListDropped)="drop($event)" [cdkDropListId]="'drop-list-' + i">
+                    <div>{{ day.date | date: 'dd' }}</div>
+                    <div *ngFor="let appointment of day.appointments" cdkDrag>
+                        <mat-card>
+                            <mat-card-content>{{ appointment.title }}</mat-card-content>
+                            <button mat-icon-button color="warn" (click)="deleteAppointment(appointment, day)">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </mat-card>
+                    </div>
+                    <button mat-icon-button color="primary" (click)="openAddAppointment(day.date)">
+                        <mat-icon>add</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </mat-card-content>
+</mat-card>
