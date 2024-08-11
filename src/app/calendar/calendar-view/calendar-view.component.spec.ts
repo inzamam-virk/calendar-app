@@ -10,7 +10,7 @@ describe('CalendarViewComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CalendarViewComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(CalendarViewComponent);
     component = fixture.componentInstance;

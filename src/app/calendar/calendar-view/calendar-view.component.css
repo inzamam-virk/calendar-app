@@ -36,7 +36,11 @@
 }
 
 mat-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: block;
+    /* Changed from flex to block to prevent stretching */
+    margin-bottom: 5px;
+}
+button {
+    margin-left: auto;
+    /* Ensure delete button stays at the right edge */
 }

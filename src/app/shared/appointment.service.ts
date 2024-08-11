@@ -26,7 +26,7 @@ export class AppointmentService {
     this.appointments.next(currentAppointments.filter(app => app !== appointment));
   }
 
-  updateAppointmentDate(appointment: { title: string, date: Date }, newDate: Date) {
+  updateAppointment(appointment: { title: string, date: Date }, newDate: Date) {
     const currentAppointments = this.appointments.value.map(app =>
       app === appointment ? { ...app, date: newDate } : app
     );

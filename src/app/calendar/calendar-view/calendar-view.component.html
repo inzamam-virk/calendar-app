@@ -12,8 +12,7 @@
                 <div class="calendar-day">Sat</div>
             </div>
             <div class="calendar-body">
-                <div *ngFor="let day of days; let i = index" class="calendar-cell" cdkDropList [cdkDropListData]="day.appointments"
-                    (cdkDropListDropped)="drop($event)" [cdkDropListId]="'drop-list-' + i">
+                <div *ngFor="let day of days; let i = index" class="calendar-cell" [id]="'drop-list-' + i" cdkDropList [cdkDropListData]="day.appointments" [cdkDropListConnectedTo]="connectedDropLists"  (cdkDropListDropped)="drop($event)">
                     <div>{{ day.date | date: 'dd' }}</div>
                     <div *ngFor="let appointment of day.appointments" cdkDrag>
                         <mat-card>

@@ -1,13 +1,12 @@
-import { Component, OnInit } from '@angular/core';
 import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { AppointmentService } from '../../shared/appointment.service';
-import { Router, RouterModule } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { map } from 'rxjs/operators';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { Router, RouterModule } from '@angular/router';
+import { AppointmentService } from '../../shared/appointment.service';
 
 @Component({
   selector: 'app-calendar-view',
@@ -27,9 +26,9 @@ import { map } from 'rxjs/operators';
 export class CalendarViewComponent implements OnInit {
   selectedMonth: number = new Date().getMonth();
   selectedYear: number = new Date().getFullYear();
-  days: Array<{ date: Date, appointments: any[] }> = [];
+  days: Array<{ date: Date, appointments: any[], id: string }> = [];
   connectedDropLists: string[] = [];
-  
+
   dateForm: FormGroup;
 
   constructor(private appointmentService: AppointmentService, private fb: FormBuilder, private router: Router) {
@@ -40,11 +39,9 @@ export class CalendarViewComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.appointmentService.appointments$.pipe(
-      map(() => {
-        this.generateCalendar();
-      })
-    ).subscribe();
+    this.appointmentService.appointments$.subscribe(() => {
+      this.generateCalendar();
+    });
   }
 
   openAddAppointment(date: Date) {
@@ -56,30 +53,33 @@ export class CalendarViewComponent implements OnInit {
     const endDate = new Date(this.selectedYear, this.selectedMonth + 1, 0);
     this.days = Array.from({ length: endDate.getDate() }, (_, i) => {
       const date = new Date(this.selectedYear, this.selectedMonth, i + 1);
-      return { date, appointments: this.appointmentService.getAppointmentsForDate(date) };
+      return {
+        date,
+        appointments: this.appointmentService.getAppointmentsForDate(date),
+        id: `drop-list-${i}` // Use array index (`i`) for unique ID
+      };
     });
-    this.connectedDropLists = this.days.map(day => day.date.toISOString());
+    this.connectedDropLists = this.days.map((_, index) => `drop-list-${index}`);
   }
 
   drop(event: CdkDragDrop<any[]>) {
-    console.log("Inside drop fun", event.container," , ", event.previousContainer," , ", event.currentIndex, " , ", event.previousIndex)
-    if (event.previousContainer !== event.container) {
-      console.log("Inside if check")
-      const draggedAppointment = event.previousContainer.data[event.previousIndex];
-      const newDate = this.days.find(day => day.appointments === event.container.data)?.date;
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    } else {
+      transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+
+      const movedAppointment = event.container.data[event.currentIndex];
+      const newDate = this.days[this.extractIndex(event.container.id)]?.date;
 
       if (newDate) {
-        this.appointmentService.deleteAppointment(draggedAppointment);
-        this.appointmentService.addAppointment({
-          ...draggedAppointment,
-          date: newDate
-        });
-
-        this.generateCalendar();
+        this.appointmentService.updateAppointment(movedAppointment, newDate);
       }
-    } else {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     }
+  }
+
+  extractIndex(str: string): number {
+    const match = str.match(/drop-list-(\d+)$/);
+    return match ? parseInt(match[1], 10) : -1;
   }
 
   deleteAppointment(appointment: { title: string, date: Date }, day: any) {
